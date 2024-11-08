@@ -9,9 +9,11 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
 // 引入Pinia构造函数
 import { createPinia } from "pinia";
+import piniaPersist from "pinia-plugin-persist";
 // 实例化Pinia
 const pinia = createPinia();
-
+// 使用持久化插件
+pinia.use(piniaPersist);
 const app = createApp(App);
 
 // 全局注册图标组件
