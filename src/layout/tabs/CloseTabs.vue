@@ -9,8 +9,8 @@
       </span>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item>关闭当前</el-dropdown-item>
-          <el-dropdown-item>关闭所有</el-dropdown-item>
+          <el-dropdown-item @click="closeCurrent">关闭当前</el-dropdown-item>
+          <el-dropdown-item @click="closeAll">关闭所有</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
@@ -18,7 +18,50 @@
 </template>
 
 <script setup lang="ts">
-// 这里可以添加 TypeScript 代码
+import { useRoute, useRouter } from "vue-router";
+import { useTabStore, Tab } from "@/store/tabs";
+
+const store = useTabStore();
+const route = useRoute();
+const router = useRouter();
+
+// 关闭当前
+const closeCurrent = () => {
+  const targetName = route.path; // 目标路由路径
+
+  // 首页不能关闭
+  if (targetName === "/dashboard") return;
+
+  // 选项卡数据
+  const tabs = store.getTab; // 假设 store.getTab 是一个 getter 方法，返回所有选项卡数据
+
+  let activeName = route.path; // 当前激活的选项卡数据
+
+  if (activeName === targetName) {
+    tabs.forEach((tab: Tab, index: number) => {
+      if (tab.path === targetName) {
+        const nextTab = tabs[index + 1] || tabs[index - 1];
+        if (nextTab) {
+          activeName = nextTab.path;
+        }
+      }
+    });
+  }
+
+  // 重新设置选项卡数据
+  store.tabList = tabs.filter((tab) => tab.path !== targetName);
+
+  // 跳转路由
+  router.push({ path: activeName });
+};
+
+// 关闭所有
+const closeAll = () => {
+  store.tabList.splice(0, store.tabList.length);
+
+  // 跳转首页
+  router.push({ path: "/dashboard" });
+};
 </script>
 
 <style scoped lang="scss">
