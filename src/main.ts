@@ -16,7 +16,11 @@ import piniaPersist from "pinia-plugin-persist";
 const pinia = createPinia();
 // 使用持久化插件
 pinia.use(piniaPersist);
+
+import myConfirm from "./utils/myConfirm";
 const app = createApp(App);
+// 全局挂载
+app.config.globalProperties.$myConfirm = myConfirm;
 
 // 全局注册图标组件
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
