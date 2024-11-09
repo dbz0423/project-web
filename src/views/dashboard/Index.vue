@@ -1,11 +1,12 @@
 <template>
-  <div>
-    首页
-  </div>
+  <div class="menu-management">首页</div>
 </template>
 
-<script setup>
-</script>
+<script setup></script>
 
 <style lang="scss" scoped>
+.menu-management {
+  padding: 20px;
+  text-align: left;
+}
 </style>
