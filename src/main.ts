@@ -4,6 +4,8 @@ import router from "./router";
 
 // 引入element plus
 import ElementPlus from "element-plus";
+// 国际化
+import { zhCn } from "element-plus/es/locales.mjs";
 import "element-plus/dist/index.css";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
@@ -21,4 +23,4 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }
 
-app.use(ElementPlus).use(router).use(pinia).mount("#app");
+app.use(ElementPlus, { locale: zhCn }).use(router).use(pinia).mount("#app");
