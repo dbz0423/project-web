@@ -158,7 +158,7 @@ import useDialog from "@/hooks/useDialog";
 import { ElMessage, FormInstance } from "element-plus";
 import SelectChecked from "@/components/SelectChecked.vue";
 import { getSelectApi } from "@/api/role/index";
-import { addApi, getListApi } from "@/api/user/index";
+import { addApi, getListApi, getRoleListApi, editApi } from "@/api/user/index";
 import { User } from "@/api/user/UserModel";
 
 // 表单ref属性
@@ -207,10 +207,29 @@ const rules = reactive({
   ],
 });
 
+// 用户拥有的角色id
+const bindValue = ref([]);
+const roleIds = ref("");
+const tags = ref("");
+// 根据用户id查询角色
+const getRoleList = async (userId: string) => {
+  let res = await getRoleListApi(userId);
+  if (res && res.code == 200) {
+    bindValue.value = res.data;
+    console.log(res.data);
+    roleIds.value = res.data.join("");
+    console.log(roleIds.value);
+  }
+};
+
 // 新增按钮
 const addBtn = () => {
+  tags.value = "0";
+  dialog.title = "新增";
+  dialog.height = 230;
   //清空下拉数据
   options.value = [];
+  bindValue.value = [];
   // 获取下拉数据
   getSelect();
   dialog.title = "新增";
@@ -226,11 +245,17 @@ const addBtn = () => {
 };
 
 // 编辑按钮
-const editBtn = (row: User) => {
+const editBtn = async (row: User) => {
+  tags.value = "1";
+  dialog.title = "编辑";
+  dialog.height = 230;
   // 清空下拉数据
   options.value = [];
+  bindValue.value = [];
   // 获取下拉数据
-  getSelect();
+  await getSelect();
+  // 查询角色Id
+  await getRoleList(row.userId);
   dialog.title = "编辑";
   dialog.height = 230;
   // 显示弹框
@@ -238,6 +263,9 @@ const editBtn = (row: User) => {
   nextTick(() => {
     // 数据回显
     Object.assign(addModel, row);
+    // 设置角色的id
+    addModel.roleId = roleIds.value;
+    addModel.password = "";
   });
   // 清空表单
   addForm.value?.resetFields();
@@ -273,11 +301,17 @@ const getSelect = async () => {
 const commit = () => {
   // 验证表单
   addForm.value?.validate(async (valid) => {
+    console.log(addModel);
     if (valid) {
-      console.log("验证通过");
-      let res = await addApi(addModel);
+      let res = null;
+      if (tags.value == "0") {
+        res = await addApi(addModel);
+      } else {
+        res = await editApi(addModel);
+      }
       if (res && res.code == 200) {
         ElMessage.success(res.msg);
+        getList();
         onClose();
       }
     }
