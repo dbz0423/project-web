@@ -88,7 +88,7 @@ import useDialog from "@/hooks/useDialog";
 import { ElMessage, FormInstance } from "element-plus";
 import { addApi, getListApi, editApi, deleteApi } from "@/api/role";
 import { SysRole } from "@/api/role/RoleModel";
-import useInstance from "@/hooks/useInstance.";
+import useInstance from "@/hooks/useInstance";
 
 // 获取全局global
 const { global } = useInstance();
