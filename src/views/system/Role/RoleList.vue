@@ -1,7 +1,7 @@
 <template>
-  <el-main class="menu-management">
+  <el-main>
     <!-- 搜索栏 -->
-    <el-form :model="searchParm" inline="true" size="default">
+    <el-form :model="searchParm" :inline="true" size="default">
       <el-form-item>
         <el-input
           placeholder="请输入关键字"
@@ -16,12 +16,11 @@
         <el-button icon="Plus" type="primary" @click="addBtn">新增</el-button>
       </el-form-item>
     </el-form>
-
     <!-- 表格数据 -->
     <el-table :height="tableHeight" :data="tableList" border stripe>
       <el-table-column prop="roleName" label="角色名称"></el-table-column>
       <el-table-column prop="remark" label="角色备注"></el-table-column>
-      <el-table-column label="操作" width="220" align="center">
+      <el-table-column label="操作" width="320" align="center">
         <template #default="scope">
           <el-button
             type="primary"
@@ -29,6 +28,13 @@
             size="default"
             @click="editBtn(scope.row)"
             >编辑</el-button
+          >
+          <el-button
+            type="success"
+            icon="Edit"
+            size="default"
+            @click="assignBtn(scope.row)"
+            >分配菜单</el-button
           >
           <el-button
             type="danger"
@@ -44,13 +50,15 @@
     <el-pagination
       @size-change="sizeChange"
       @current-change="currentChange"
-      :current-page.sync="searchParm.currentPage"
+      v-model:current-page="searchParm.currentPage"
       :page-sizes="[10, 20, 40, 80, 100]"
       :page-size="searchParm.pageSize"
       layout="total, sizes, prev, pager, next, jumper"
       :total="searchParm.total"
       background
-    ></el-pagination>
+    >
+    </el-pagination>
+
     <!-- 新增、编辑弹框 -->
     <SysDialog
       :title="dialog.title"
@@ -66,7 +74,7 @@
           ref="addRef"
           :rules="rules"
           label-width="80px"
-          inline="false"
+          :inline="false"
           size="default"
         >
           <el-form-item prop="roleName" label="角色名称">
@@ -78,6 +86,9 @@
         </el-form>
       </template>
     </SysDialog>
+
+    <!-- 分配菜单 -->
+    <AssignTree ref="assignTree"></AssignTree>
   </el-main>
 </template>
 
@@ -86,20 +97,20 @@ import { nextTick, onMounted, reactive, ref } from "vue";
 import SysDialog from "@/components/SysDialog.vue";
 import useDialog from "@/hooks/useDialog";
 import { ElMessage, FormInstance } from "element-plus";
-import { addApi, getListApi, editApi, deleteApi } from "@/api/role";
+import { addApi, getListApi, editApi, deleteApi } from "@/api/role/index";
 import { SysRole } from "@/api/role/RoleModel";
 import useInstance from "@/hooks/useInstance";
+import AssignTree from "./AssignTree.vue";
 
-// 获取全局global
+//菜单树的ref属性
+const assignTree = ref();
+//获取全局golbal
 const { global } = useInstance();
-
-// 表单ref属性
+//表单ref属性
 const addRef = ref<FormInstance>();
-
-// 弹框属性
+//弹框属性
 const { dialog, onClose, onShow } = useDialog();
-
-// 表单绑定的对象
+//表单绑定的对象
 const searchParm = reactive({
   currentPage: 1,
   pageSize: 10,
@@ -107,28 +118,25 @@ const searchParm = reactive({
   total: 0,
 });
 
-// 判断新增还是编辑的标识 0：新增 1：编辑
+//判断新增还是编辑的标识 0:新增 1：编辑
 const tags = ref("");
-
-// 新增按钮点击事件
+//新增按钮
 const addBtn = () => {
   tags.value = "0";
   dialog.title = "新增";
   dialog.height = 180;
-  // 显示弹框
+  //显示弹框
   onShow();
-  // 清空表单
+  //清空表单
   addRef.value?.resetFields();
 };
-
-// 新增表单对象
+//新增表单对象
 const addModel = reactive({
   roleId: "",
   roleName: "",
   remark: "",
 });
-
-// 表单验证规则
+//表单验证规则
 const rules = reactive({
   roleName: [
     {
@@ -138,48 +146,26 @@ const rules = reactive({
     },
   ],
 });
-
-// 表单提交
-const commit = () => {
-  addRef.value?.validate(async (valid) => {
-    if (valid) {
-      console.log("表单验证通过");
-      let res = null;
-      if (tags.value == "0") {
-        // 新增
-        res = await addApi(addModel);
-      } else {
-        // 编辑
-        res = await editApi(addModel);
-      }
-      if (res && res.code == 200) {
-        ElMessage.success(res.msg);
-        // 刷新数据
-        getList();
-        // 关闭弹窗
-        onClose();
-      }
-    }
-  });
-};
-
-// 编辑按钮
+//编辑按钮
 const editBtn = (row: SysRole) => {
   tags.value = "1";
   console.log(row);
-  // 显示弹框
+  //显示弹框
   dialog.visible = true;
   dialog.title = "编辑";
   dialog.height = 180;
   nextTick(() => {
-    // 回显数据
+    //回显数据
     Object.assign(addModel, row);
   });
-  // 清空表单
+  //清空表单
   addRef.value?.resetFields();
 };
-
-// 删除按钮
+//分配菜单按钮
+const assignBtn = (row: SysRole) => {
+  assignTree.value.show(row.roleId, row.roleName);
+};
+//删除按钮
 const deleteBtn = async (roleId: string) => {
   console.log(roleId);
   console.log(global);
@@ -189,55 +175,69 @@ const deleteBtn = async (roleId: string) => {
     let res = await deleteApi(roleId);
     if (res && res.code == 200) {
       ElMessage.success(res.msg);
-      // 刷新列表
+      //刷新列表
       getList();
     }
   }
 };
-
-// 页容量改变时触发
+//页容量改变时触发
 const sizeChange = (size: number) => {
   searchParm.pageSize = size;
   getList();
 };
-
-// 页数改变时触发
+//页数改变时触发
 const currentChange = (page: number) => {
   searchParm.currentPage = page;
   getList();
 };
-
-// 表格高度
+//表单提交
+const commit = () => {
+  addRef.value?.validate(async (valid) => {
+    if (valid) {
+      console.log("表单验证通过");
+      //提交请求
+      let res = null;
+      if (tags.value == "0") {
+        //新增
+        res = await addApi(addModel);
+      } else {
+        res = await editApi(addModel); //编辑
+      }
+      if (res && res.code == 200) {
+        ElMessage.success(res.msg);
+        //刷新列表
+        getList();
+        //关闭弹框
+        onClose();
+      }
+    }
+  });
+};
+//表格高度
 const tableHeight = ref(0);
-
-// 表格数据
+//表格数据
 const tableList = ref([]);
-
-// 查询列表
+//查询列表
 const getList = async () => {
   let res = await getListApi(searchParm);
-  if (res && res.code === 200) {
-    // 设置表格数据
+  if (res && res.code == 200) {
+    //设置表格数据
     console.log(res);
     tableList.value = res.data.records;
-    // 设置分页总条数
+    //设置分页总条数
     searchParm.total = res.data.total;
   }
 };
-
-// 搜索
+//搜索
 const searchBtn = () => {
   getList();
 };
-
-// 重置
+//重置
 const resetBtn = () => {
   searchParm.roleName = "";
   searchParm.currentPage = 1;
   getList();
 };
-
-// 页面加载时调用
 onMounted(() => {
   nextTick(() => {
     tableHeight.value = window.innerHeight - 230;
@@ -246,9 +246,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.menu-management {
-  padding: 20px;
-  text-align: left;
-}
-</style>
+<style scoped></style>
