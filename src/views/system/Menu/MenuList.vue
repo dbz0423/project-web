@@ -12,6 +12,7 @@
       stripe
     >
       <el-table-column label="菜单名称" prop="title"></el-table-column>
+
       <el-table-column label="菜单图标" prop="icon">
         <template #default="scope">
           <el-icon v-if="scope.row.icon">
@@ -24,8 +25,8 @@
           <el-tag v-if="scope.row.type == '0'" type="danger" size="default"
             >目录</el-tag
           >
-          <el-tag v-if="scope.row.type == '1'" type="success" size="default"
-            >菜单</el-tag
+          <el-tag v-if="scope.row.type == '1'" type="success" size="default">
+            菜单</el-tag
           >
           <el-tag v-if="scope.row.type == '2'" type="primary" size="default"
             >按钮</el-tag
@@ -50,12 +51,13 @@
             type="danger"
             icon="Delete"
             size="default"
-            @click="deleteBtn(scope.row.menu)"
+            @click="deleteBtn(scope.row.menuId)"
             >删除</el-button
           >
         </template>
       </el-table-column>
     </el-table>
+
     <!-- 新增弹框 -->
     <SysDialog
       :title="dialog.title"
@@ -146,8 +148,17 @@
 import SysDialog from "@/components/SysDialog.vue";
 import useDialog from "@/hooks/useDialog";
 import { ElMessage, FormInstance } from "element-plus";
-import { onMounted, reactive, ref } from "vue";
-import { getParentApi, addApi, getListApi } from "@/api/menu/index";
+import { nextTick, onMounted, reactive, ref } from "vue";
+import {
+  getParentApi,
+  addApi,
+  getListApi,
+  editApi,
+  deleteApi,
+} from "@/api/menu/index";
+import { MenuType } from "@/api/menu/MenuModel";
+import useInstance from "@/hooks/useInstance";
+const { global } = useInstance();
 //表单ref属性
 const addForm = ref<FormInstance>();
 // 解构弹框属性
@@ -160,12 +171,18 @@ const getParent = async () => {
     treeList.value = res.data;
   }
 };
+//标识：区分新增和编辑
+const tags = ref("");
 //新增按钮
 const addBtn = () => {
+  tags.value = "0";
+  dialog.title = "新增";
   //获取上级菜单
   getParent();
   //显示弹框
   onShow();
+  //清空表单
+  addForm.value?.resetFields();
 };
 //表单绑定的对象
 const addModel = reactive({
@@ -253,12 +270,34 @@ const rules = reactive({
   ],
 });
 //编辑
-const editBtn = (row: MenuType) => {
+const editBtn = async (row: MenuType) => {
   console.log(row);
+  tags.value = "1";
+  dialog.title = "编辑";
+  //获取上级菜单
+  await getParent();
+  //显示弹框
+  onShow();
+  //设置回显的数据
+  nextTick(() => {
+    Object.assign(addModel, row);
+  });
+  //清空表单
+  addForm.value?.resetFields();
 };
 //删除
-const deleteBtn = (menuId: string) => {
+const deleteBtn = async (menuId: string) => {
   console.log(menuId);
+  const confirm = await global.$myConfirm("确定删除该数据吗?");
+  if (confirm) {
+    let res = await deleteApi(menuId);
+    if (res && res.code == 200) {
+      ElMessage.success(res.msg);
+      //刷新列表
+      getList();
+      onClose();
+    }
+  }
 };
 //表单提交
 const commit = () => {
@@ -266,9 +305,16 @@ const commit = () => {
     if (valid) {
       console.log("验证通过");
       console.log(addModel);
-      let res = await addApi(addModel);
+      let res = null;
+      if (tags.value == "0") {
+        res = await addApi(addModel);
+      } else {
+        res = await editApi(addModel);
+      }
       if (res && res.code == 200) {
         ElMessage.success(res.msg);
+        //刷新列表
+        getList();
         onClose();
       }
     }
