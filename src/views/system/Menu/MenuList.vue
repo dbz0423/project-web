@@ -2,6 +2,60 @@
   <div class="menu-management">
     <h2>菜单管理</h2>
     <el-button type="primary" size="default" @click="addBtn">新增</el-button>
+    <!-- 表格 -->
+    <el-table
+      style="margin-top: 20px"
+      default-expand-all
+      :data="tableList"
+      row-key="menuId"
+      border
+      stripe
+    >
+      <el-table-column label="菜单名称" prop="title"></el-table-column>
+      <el-table-column label="菜单图标" prop="icon">
+        <template #default="scope">
+          <el-icon v-if="scope.row.icon">
+            <component :is="scope.row.icon"></component>
+          </el-icon>
+        </template>
+      </el-table-column>
+      <el-table-column label="类型" prop="type">
+        <template #default="scope">
+          <el-tag v-if="scope.row.type == '0'" type="danger" size="default"
+            >目录</el-tag
+          >
+          <el-tag v-if="scope.row.type == '1'" type="success" size="default"
+            >菜单</el-tag
+          >
+          <el-tag v-if="scope.row.type == '2'" type="primary" size="default"
+            >按钮</el-tag
+          >
+        </template>
+      </el-table-column>
+      <el-table-column label="上级菜单" prop="parentName"></el-table-column>
+      <el-table-column label="路由名称" prop="name"></el-table-column>
+      <el-table-column label="路由地址" prop="path"></el-table-column>
+      <el-table-column label="组件路径" prop="url"></el-table-column>
+      <el-table-column label="序号" prop="orderNum"></el-table-column>
+      <el-table-column label="操作" align="center" width="220">
+        <template #default="scope">
+          <el-button
+            type="primary"
+            icon="Edit"
+            size="default"
+            @click="editBtn(scope.row)"
+            >编辑</el-button
+          >
+          <el-button
+            type="danger"
+            icon="Delete"
+            size="default"
+            @click="deleteBtn(scope.row.menu)"
+            >删除</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
     <!-- 新增弹框 -->
     <SysDialog
       :title="dialog.title"
@@ -92,8 +146,8 @@
 import SysDialog from "@/components/SysDialog.vue";
 import useDialog from "@/hooks/useDialog";
 import { ElMessage, FormInstance } from "element-plus";
-import { reactive, ref } from "vue";
-import { getParentApi, addApi } from "@/api/menu/index";
+import { onMounted, reactive, ref } from "vue";
+import { getParentApi, addApi, getListApi } from "@/api/menu/index";
 //表单ref属性
 const addForm = ref<FormInstance>();
 // 解构弹框属性
@@ -198,6 +252,14 @@ const rules = reactive({
     },
   ],
 });
+//编辑
+const editBtn = (row: MenuType) => {
+  console.log(row);
+};
+//删除
+const deleteBtn = (menuId: string) => {
+  console.log(menuId);
+};
 //表单提交
 const commit = () => {
   addForm.value?.validate(async (valid) => {
@@ -212,6 +274,17 @@ const commit = () => {
     }
   });
 };
+//获取表格数据
+const tableList = ref([]);
+const getList = async () => {
+  let res = await getListApi();
+  if (res && res.code == 200) {
+    tableList.value = res.data;
+  }
+};
+onMounted(() => {
+  getList();
+});
 </script>
 
 <style scoped>
