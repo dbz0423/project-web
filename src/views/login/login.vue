@@ -5,39 +5,42 @@
       :model="loginModel"
       ref="form"
       :rules="rules"
-      inline="false"
+      :inline="false"
       size="large"
     >
       <el-form-item>
         <div class="login-title">系统登录</div>
       </el-form-item>
-      <el-form-item prop="">
+      <el-form-item prop="username">
         <el-input
           placeholder="请输入账户"
           v-model="loginModel.username"
         ></el-input>
       </el-form-item>
-      <el-form-item prop="">
+      <el-form-item prop="password">
         <el-input
           placeholder="请输入密码"
           v-model="loginModel.password"
-          type="password"
         ></el-input>
       </el-form-item>
-      <el-form-item prop="">
-        <el-row :gutter="10">
+      <el-form-item prop="code">
+        <el-row style="width: 100%">
           <el-col :span="16" :offset="0">
             <el-input
               placeholder="请输入验证码"
               v-model="loginModel.code"
             ></el-input>
           </el-col>
-          <el-col :span="8" :offset="0">验证码</el-col>
+          <el-col style="padding-left: 10px" :span="8" :offset="0">
+            <img class="images" @click="getImg" :src="imgsrc" />
+          </el-col>
         </el-row>
       </el-form-item>
       <el-row :gutter="20">
         <el-col :span="12" :offset="0">
-          <el-button class="my-btn" type="primary">登录</el-button>
+          <el-button @click="commit" class="my-btn" type="primary"
+            >登录</el-button
+          >
         </el-col>
         <el-col :span="12" :offset="0">
           <el-button type="danger" plain class="my-btn">重置</el-button>
@@ -48,8 +51,14 @@
 </template>
 
 <script setup lang="ts">
-import { FormInstance } from "element-plus";
-import { reactive, ref } from "vue";
+import { ElMessage, FormInstance } from "element-plus";
+import { onMounted, reactive, ref } from "vue";
+import { getImgApi, loginApi } from "@/api/user/index.ts";
+import { useUserStore } from "@/store/user";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const store = useUserStore();
 
 // 表单ref属性
 const form = ref<FormInstance>();
@@ -62,7 +71,49 @@ const loginModel = reactive({
 });
 
 // 表单验证规则
-const rules = reactive({});
+const rules = reactive({
+  username: [
+    { required: true, trigger: ["blur", "change"], message: "请输入账户" },
+  ],
+  password: [
+    { required: true, trigger: ["blur", "change"], message: "请输入密码" },
+  ],
+  code: [
+    { required: true, trigger: ["blur", "change"], message: "请输入验证码" },
+  ],
+});
+
+const imgsrc = ref("");
+
+// 获取验证码
+const getImg = async () => {
+  let res = await getImgApi();
+  if (res && res.code === 200) {
+    imgsrc.value = res.data;
+  }
+};
+
+// 登录提交
+const commit = () => {
+  form.value?.validate(async (valid) => {
+    if (valid) {
+      let res = await loginApi(loginModel);
+      if (res && res.code === 200) {
+        ElMessage.success(res.msg);
+        // 存储用户信息
+        console.log(res);
+        store.setUserId(res.data.userId);
+        store.setNickName(res.data.nickName);
+        // 跳转首页
+        router.push({ path: "/" });
+      }
+    }
+  });
+};
+
+onMounted(() => {
+  getImg();
+});
 </script>
 
 <style scoped lang="scss">

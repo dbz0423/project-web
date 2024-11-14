@@ -18,3 +18,9 @@ export type UserListParm = {
   pageSize: number;
   total: number;
 };
+
+export type Login = {
+  username: string;
+  password: string;
+  code: string;
+};
