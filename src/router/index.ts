@@ -2,7 +2,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Layout from "@/layout/Index.vue";
 const routes: Array<RouteRecordRaw> = [
   {
-    path: "/",
+    path: "/dashboard",
     component: Layout,
     redirect: "/dashboard",
     children: [
@@ -92,7 +92,7 @@ const routes: Array<RouteRecordRaw> = [
     ],
   },
   {
-    path: "/login",
+    path: "/",
     name: "login",
     component: () => import("@/views/login/login.vue"),
   },

@@ -106,7 +106,7 @@ const commit = () => {
         store.setNickName(res.data.nickName);
         store.setToken(res.data.token);
         // 跳转首页
-        router.push({ path: "/" });
+        router.push({ path: "/dashboard" });
       }
     }
   });

@@ -1,13 +1,10 @@
 <template>
   <div class="logo">
     <img :src="MenuLogo" />
-    <span
-      v-if="show"
-      class="logo-title"
-    >{{ title }}</span>
+    <span v-if="show" class="logo-title" style="width: 200px">{{ title }}</span>
   </div>
 </template>
-   <script setup lang="ts">
+<script setup lang="ts">
 import { ref, watch } from "vue";
 import MenuLogo from "@/assets/MenuLogo.png";
 const title = ref("通⽤后台权限系统");
@@ -28,7 +25,7 @@ watch(
   }
 );
 </script>
-   <style scoped lang="scss">
+<style scoped lang="scss">
 .logo {
   display: flex;
   width: 100%;
