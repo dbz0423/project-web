@@ -1,6 +1,6 @@
 <template>
   <el-main :style="{ height: mainHeight + 'px' }">
-    <div style="display: flex">
+    <!-- <div style="display: flex">
       <el-card style="flex: 1">
         <template #header>
           <div class="card-header">
@@ -25,7 +25,7 @@
         </template>
         <div ref="myChart2" :style="{ width: '400px', height: '300px' }"></div>
       </el-card>
-    </div>
+    </div> -->
   </el-main>
 </template>
 
