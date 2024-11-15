@@ -1,5 +1,5 @@
 import http from "@/http";
-import { User, UserListParm, Login, AssignParm } from "./UserModel";
+import { User, UserListParm, Login, AssignParm, UpdateParm } from "./UserModel";
 
 // 新增
 export const addApi = (parm: User) => {
@@ -49,4 +49,9 @@ export const getAssignTreeApi = (parm: AssignParm) => {
 // 获取用户信息
 export const getInfoApi = (userId: string) => {
   return http.get("/api/sysUser/getInfo", { userId: userId });
+};
+
+// 修改密码
+export const updatePasswordApi = (parm: UpdateParm) => {
+  return http.post("/api/sysUser/updatePassword", parm);
 };
