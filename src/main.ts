@@ -8,6 +8,7 @@ import ElementPlus from "element-plus";
 import { zhCn } from "element-plus/es/locales.mjs";
 import "element-plus/dist/index.css";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+import * as echarts from "echarts";
 
 // 引入Pinia构造函数
 import { createPinia } from "pinia";
@@ -21,6 +22,7 @@ import myConfirm from "./utils/myConfirm";
 const app = createApp(App);
 // 全局挂载
 app.config.globalProperties.$myConfirm = myConfirm;
+app.config.globalProperties.$echarts = echarts;
 
 // 全局注册图标组件
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

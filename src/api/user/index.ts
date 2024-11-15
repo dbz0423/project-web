@@ -45,3 +45,8 @@ export const loginApi = (parm: Login) => {
 export const getAssignTreeApi = (parm: AssignParm) => {
   return http.post("/api/sysUser/tree", parm);
 };
+
+// 获取用户信息
+export const getInfoApi = (userId: string) => {
+  return http.get("/api/sysUser/getInfo", { userId: userId });
+};
