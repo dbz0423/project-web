@@ -1,13 +1,13 @@
 <template>
   <div class="header-container">
-    <!-- <div class="left">
+    <div class="left">
       <Collapse></Collapse>
       <BreadCrumb></BreadCrumb>
     </div>
     <div class="right">
       <span style="padding-right: 15px; color: #fff">欢迎您，{{ name }}</span>
       <LoginOut></LoginOut>
-    </div> -->
+    </div>
   </div>
 </template>
 <script setup lang="ts">
