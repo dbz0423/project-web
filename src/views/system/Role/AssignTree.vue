@@ -9,6 +9,8 @@
   >
     <template v-slot:content>
       <el-tree
+        ref="treeRef"
+        node-key="menuId"
         show-checkbox
         default-expand-all
         :default-checked-keys="assignTreeData.assignTreeChecked"
@@ -32,16 +34,19 @@ import { ElTree } from "element-plus";
 const treeRef = ref<InstanceType<typeof ElTree>>();
 const store = useUserStore();
 const { dialog, onClose, onShow } = useDialog();
+
 //树的属性配置
 const defaultProps = {
   children: "children",
   label: "title",
 };
+
 //树数据
 const assignTreeData = reactive({
   list: [],
   assignTreeChecked: [],
 });
+
 //树数据查询的参数
 const parms = reactive({
   userId: "",
@@ -61,6 +66,7 @@ const checked = (id: number, data: any, newArr: any) => {
     }
   });
 };
+
 //查询菜单树
 const getAssignTree = async () => {
   let res = await getAssignTreeApi(parms);
@@ -86,8 +92,10 @@ const commitParm = reactive({
 
 //弹框显示
 const show = async (roleId: string, name: string) => {
+  commitParm.roleId = roleId;
   assignTreeData.assignTreeChecked = [];
   assignTreeData.list = [];
+  commitParm.list = [];
   parms.roleId = roleId;
   parms.userId = store.getUserId;
   //设置弹框属性
@@ -98,6 +106,7 @@ const show = async (roleId: string, name: string) => {
   await getAssignTree();
   onShow();
 };
+
 //暴露出去，给外部组件使用
 defineExpose({
   show,
